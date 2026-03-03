@@ -1,0 +1,316 @@
+{
+  "tier1": {
+    "vw": {
+      "name": "Volkswagen",
+      "index_url": "https://www.vw.co.za/en/models.html",
+      "base_url": "https://www.vw.co.za"
+    },
+    "toyota": {
+      "name": "Toyota",
+      "index_url": "https://www.toyota.co.za/vehicles",
+      "base_url": "https://www.toyota.co.za"
+    },
+    "ford": {
+      "name": "Ford",
+      "index_url": "https://www.ford.co.za/showroom/",
+      "base_url": "https://www.ford.co.za",
+      "note": "Heavy Akamai bot protection - may need manual model list",
+      "manual_models": [
+        {"model_name": "Figo", "url": "https://www.ford.co.za/showroom/future-vehicle/figo/"},
+        {"model_name": "EcoSport", "url": "https://www.ford.co.za/showroom/future-vehicle/ecosport/"},
+        {"model_name": "Puma", "url": "https://www.ford.co.za/showroom/future-vehicle/puma/"},
+        {"model_name": "Escape", "url": "https://www.ford.co.za/showroom/future-vehicle/escape/"},
+        {"model_name": "Territory", "url": "https://www.ford.co.za/showroom/future-vehicle/territory/"},
+        {"model_name": "Everest", "url": "https://www.ford.co.za/showroom/future-vehicle/everest/"},
+        {"model_name": "Mustang", "url": "https://www.ford.co.za/showroom/future-vehicle/mustang/"},
+        {"model_name": "Ranger", "url": "https://www.ford.co.za/showroom/future-vehicle/ranger/"},
+        {"model_name": "Ranger Raptor", "url": "https://www.ford.co.za/showroom/future-vehicle/ranger/raptor/"},
+        {"model_name": "Transit Van", "url": "https://www.ford.co.za/showroom/future-vehicle/transit-van/"},
+        {"model_name": "Tourneo Connect", "url": "https://www.ford.co.za/showroom/future-vehicle/tourneo-connect/"}
+      ]
+    },
+    "hyundai": {
+      "name": "Hyundai",
+      "index_url": "https://www.hyundai.co.za/new-vehicles",
+      "base_url": "https://www.hyundai.co.za",
+      "note": "Category-based showroom, models loaded via JS API",
+      "manual_models": [
+        {"model_name": "Grand i10", "url": "https://www.hyundai.co.za/new-vehicles/grand-i10"},
+        {"model_name": "i20", "url": "https://www.hyundai.co.za/new-vehicles/i20"},
+        {"model_name": "i20 N", "url": "https://www.hyundai.co.za/new-vehicles/i20-n"},
+        {"model_name": "i30 N", "url": "https://www.hyundai.co.za/new-vehicles/i30-n"},
+        {"model_name": "Elantra", "url": "https://www.hyundai.co.za/new-vehicles/elantra"},
+        {"model_name": "Venue", "url": "https://www.hyundai.co.za/new-vehicles/venue"},
+        {"model_name": "Creta", "url": "https://www.hyundai.co.za/new-vehicles/creta"},
+        {"model_name": "Tucson", "url": "https://www.hyundai.co.za/new-vehicles/tucson"},
+        {"model_name": "Santa Fe", "url": "https://www.hyundai.co.za/new-vehicles/santa-fe"},
+        {"model_name": "Palisade", "url": "https://www.hyundai.co.za/new-vehicles/palisade"},
+        {"model_name": "Staria", "url": "https://www.hyundai.co.za/new-vehicles/staria"},
+        {"model_name": "H-1", "url": "https://www.hyundai.co.za/new-vehicles/h-1"},
+        {"model_name": "Mighty", "url": "https://www.hyundai.co.za/new-vehicles/mighty"}
+      ]
+    },
+    "kia": {
+      "name": "Kia",
+      "index_url": "https://www.kia.co.za/models",
+      "base_url": "https://www.kia.co.za"
+    },
+    "bmw": {
+      "name": "BMW",
+      "index_url": "https://www.bmw.co.za/en/all-models.html",
+      "base_url": "https://www.bmw.co.za",
+      "note": "Complex JS site, manual model list covering main lineup",
+      "manual_models": [
+        {"model_name": "1 Series", "url": "https://www.bmw.co.za/en/all-models/1-series/bmw-1-series/bmw-1-series.html"},
+        {"model_name": "2 Series Coupe", "url": "https://www.bmw.co.za/en/all-models/2-series/2-series-coupe/bmw-2-series-coupe.html"},
+        {"model_name": "3 Series Sedan", "url": "https://www.bmw.co.za/en/all-models/3-series/bmw-3-series-sedan/bmw-3-series-sedan.html"},
+        {"model_name": "4 Series Coupe", "url": "https://www.bmw.co.za/en/all-models/4-series/4-series-coupe/bmw-4-series-coupe.html"},
+        {"model_name": "4 Series Gran Coupe", "url": "https://www.bmw.co.za/en/all-models/4-series/gran-coupe/bmw-4-series-gran-coupe.html"},
+        {"model_name": "5 Series Sedan", "url": "https://www.bmw.co.za/en/all-models/bmw-5-series-overview/sedan/bmw-5-series-sedan-overview.html"},
+        {"model_name": "7 Series Sedan", "url": "https://www.bmw.co.za/en/all-models/7-series/7-series-sedan/bmw-7-series-sedan.html"},
+        {"model_name": "8 Series Gran Coupe", "url": "https://www.bmw.co.za/en/all-models/8-series/gran-coupe/showroom/bmw-8-series-gran-coupe-highlights.html"},
+        {"model_name": "X1", "url": "https://www.bmw.co.za/en/all-models/x-series/x1/bmw-x1.html"},
+        {"model_name": "X2", "url": "https://www.bmw.co.za/en/all-models/x-series/x2/bmw-x2-overview.html"},
+        {"model_name": "X3", "url": "https://www.bmw.co.za/en/all-models/x-series/x3/bmw-x3.html"},
+        {"model_name": "X4", "url": "https://www.bmw.co.za/en/all-models/x-series/X4/showroom/bmw-X4-highlights.html"},
+        {"model_name": "X5", "url": "https://www.bmw.co.za/en/all-models/x-series/x5/bmw-x5.html"},
+        {"model_name": "X6", "url": "https://www.bmw.co.za/en/all-models/x-series/x6/bmw-x6.html"},
+        {"model_name": "X7", "url": "https://www.bmw.co.za/en/all-models/x-series/x7/bmw-x7.html"},
+        {"model_name": "XM", "url": "https://www.bmw.co.za/en/all-models/m-series/xm/bmw-xm.html"},
+        {"model_name": "Z4", "url": "https://www.bmw.co.za/en/all-models/z-series/z4-roadster/bmw-z4-roadster.html"},
+        {"model_name": "i4", "url": "https://www.bmw.co.za/en/all-models/bmw-i/i4/bmw-i4-gran-coupe.html"},
+        {"model_name": "i5", "url": "https://www.bmw.co.za/en/all-models/bmw-i/i5/bmw-i5-overview.html"},
+        {"model_name": "i7", "url": "https://www.bmw.co.za/en/all-models/bmw-i/i7/bmw-i7-sedan.html"},
+        {"model_name": "iX", "url": "https://www.bmw.co.za/en/all-models/bmw-i/ix/bmw-ix.html"},
+        {"model_name": "iX1", "url": "https://www.bmw.co.za/en/all-models/bmw-i/ix1/bmw-ix1.html"},
+        {"model_name": "M2", "url": "https://www.bmw.co.za/en/all-models/m-series/bmw-2-series-m-models/bmw-m2-coupe.html"},
+        {"model_name": "M3", "url": "https://www.bmw.co.za/en/all-models/m-series/bmw-3-series-m-models/bmw-m3-sedan.html"},
+        {"model_name": "M4", "url": "https://www.bmw.co.za/en/all-models/m-series/bmw-4-series-m-models/bmw-m4-coupe.html"},
+        {"model_name": "M5", "url": "https://www.bmw.co.za/en/all-models/m-series/m5-series/bmw-m5-sedan.html"}
+      ]
+    },
+    "mercedes": {
+      "name": "Mercedes-Benz",
+      "index_url": "https://www.mercedes-benz.co.za/passengercars/models.html",
+      "base_url": "https://www.mercedes-benz.co.za",
+      "note": "JS-heavy site, manual model list",
+      "manual_models": [
+        {"model_name": "A-Class Hatchback", "url": "https://www.mercedes-benz.co.za/passengercars/models/hatchback/a-class/overview.html"},
+        {"model_name": "A-Class Sedan", "url": "https://www.mercedes-benz.co.za/passengercars/models/saloon/a-class/overview.html"},
+        {"model_name": "CLA Coupe", "url": "https://www.mercedes-benz.co.za/passengercars/models/coupe/cla/overview.html"},
+        {"model_name": "C-Class Sedan", "url": "https://www.mercedes-benz.co.za/passengercars/models/saloon/c-class/overview.html"},
+        {"model_name": "CLE Coupe", "url": "https://www.mercedes-benz.co.za/passengercars/models/coupe/cle/overview.html"},
+        {"model_name": "CLE Cabriolet", "url": "https://www.mercedes-benz.co.za/passengercars/models/cabriolet-roadster/cle/overview.html"},
+        {"model_name": "E-Class Sedan", "url": "https://www.mercedes-benz.co.za/passengercars/models/saloon/e-class/overview.html"},
+        {"model_name": "S-Class", "url": "https://www.mercedes-benz.co.za/passengercars/models/saloon/s-class/overview.html"},
+        {"model_name": "Maybach S-Class", "url": "https://www.mercedes-benz.co.za/passengercars/models/saloon/mercedes-maybach-s-class/overview.html"},
+        {"model_name": "AMG GT Coupe", "url": "https://www.mercedes-benz.co.za/passengercars/models/coupe/amg-gt-2-door-e/overview.html"},
+        {"model_name": "AMG SL Roadster", "url": "https://www.mercedes-benz.co.za/passengercars/models/cabriolet-roadster/sl/overview.html"},
+        {"model_name": "GLA", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/gla/overview.html"},
+        {"model_name": "GLB", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/glb/overview.html"},
+        {"model_name": "GLC", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/glc/overview.html"},
+        {"model_name": "GLC Coupe", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/glc-coupe/overview.html"},
+        {"model_name": "GLE", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/gle/overview.html"},
+        {"model_name": "GLE Coupe", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/gle-coupe/overview.html"},
+        {"model_name": "GLS", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/gls/overview.html"},
+        {"model_name": "Maybach GLS", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/maybach-gls/overview.html"},
+        {"model_name": "G-Class", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/g-class/overview.html"},
+        {"model_name": "EQE SUV", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/eqe/amg.html"},
+        {"model_name": "EQS SUV", "url": "https://www.mercedes-benz.co.za/passengercars/models/suv/eqs/overview.html"},
+        {"model_name": "V-Class", "url": "https://www.mercedes-benz.co.za/passengercars/models/van/v-class/overview.html"}
+      ]
+    },
+    "nissan": {
+      "name": "Nissan",
+      "index_url": "https://cmhnissan.co.za/",
+      "base_url": "https://cmhnissan.co.za",
+      "note": "Using CMH dealer site — more accurate than nissan.co.za",
+      "manual_models": [
+        {"model_name": "Magnite", "url": "https://cmhnissan.co.za/new-models/new-magnite/"},
+        {"model_name": "Magnite Kuro", "url": "https://cmhnissan.co.za/new-models/magnite-kuro/"},
+        {"model_name": "Magnite Move", "url": "https://cmhnissan.co.za/new-models/magnite-move/"},
+        {"model_name": "Navara Single Cab", "url": "https://cmhnissan.co.za/new-models/navara-single-cab/"},
+        {"model_name": "Navara Double Cab", "url": "https://cmhnissan.co.za/new-models/navara-double-cab/"},
+        {"model_name": "X-Trail", "url": "https://cmhnissan.co.za/new-models/x-trail/"},
+        {"model_name": "Patrol", "url": "https://cmhnissan.co.za/new-models/patrol/"}
+      ]
+    },
+    "suzuki": {
+      "name": "Suzuki",
+      "index_url": "https://www.suzukiauto.co.za/new-cars",
+      "base_url": "https://www.suzukiauto.co.za"
+    },
+    "mazda": {
+      "name": "Mazda",
+      "index_url": "https://www.mazda.co.za",
+      "base_url": "https://www.mazda.co.za"
+    }
+  },
+  "tier2": {
+    "haval": {
+      "name": "Haval",
+      "index_url": "https://www.gwm.co.za/models",
+      "base_url": "https://www.gwm.co.za",
+      "note": "haval.co.za SSL expired, Haval now under gwm.co.za",
+      "manual_models": [
+        {"model_name": "Jolion", "url": "https://www.gwm.co.za/models/jolion"},
+        {"model_name": "Jolion Pro", "url": "https://www.gwm.co.za/models/jolion-pro"},
+        {"model_name": "H6", "url": "https://www.gwm.co.za/models/haval-h6"},
+        {"model_name": "H6 GT", "url": "https://www.gwm.co.za/models/haval-h6-gt"},
+        {"model_name": "H6 GT PHEV", "url": "https://www.gwm.co.za/models/haval-h6-gt-phev"},
+        {"model_name": "H7", "url": "https://www.gwm.co.za/models/haval-h7"}
+      ]
+    },
+    "chery": {
+      "name": "Chery",
+      "index_url": "https://www.chery.co.za/models",
+      "base_url": "https://www.chery.co.za"
+    },
+    "renault": {
+      "name": "Renault",
+      "index_url": "https://www.renault.co.za/vehicles",
+      "base_url": "https://www.renault.co.za",
+      "note": "JS-heavy site, manual fallback",
+      "manual_models": [
+        {"model_name": "Kwid", "url": "https://www.renault.co.za/vehicle/kwid"},
+        {"model_name": "Triber", "url": "https://www.renault.co.za/vehicle/triber"},
+        {"model_name": "Kiger", "url": "https://www.renault.co.za/vehicle/kiger"},
+        {"model_name": "Clio", "url": "https://www.renault.co.za/vehicle/clio"},
+        {"model_name": "Captur", "url": "https://www.renault.co.za/vehicle/captur"},
+        {"model_name": "Duster", "url": "https://www.renault.co.za/vehicle/duster"},
+        {"model_name": "Koleos", "url": "https://www.renault.co.za/vehicle/koleos"},
+        {"model_name": "Triber Express II", "url": "https://www.renault.co.za/vehicle/triber-express"},
+        {"model_name": "Trafic Panel Van", "url": "https://www.renault.co.za/vehicle/trafic-van"}
+      ]
+    },
+    "isuzu": {
+      "name": "Isuzu",
+      "index_url": "https://www.isuzu.co.za/vehicles",
+      "base_url": "https://www.isuzu.co.za"
+    },
+    "subaru": {
+      "name": "Subaru",
+      "index_url": "https://www.subaru.co.za/showroom/",
+      "base_url": "https://www.subaru.co.za",
+      "note": "JS-heavy site, manual model list",
+      "manual_models": [
+        {"model_name": "Crosstrek", "url": "https://www.subaru.co.za/showroom/crosstrek/"},
+        {"model_name": "Forester", "url": "https://www.subaru.co.za/showroom/forester/"},
+        {"model_name": "Outback", "url": "https://www.subaru.co.za/showroom/outback/"},
+        {"model_name": "WRX", "url": "https://www.subaru.co.za/showroom/wrx/"}
+      ]
+    },
+    "mitsubishi": {
+      "name": "Mitsubishi",
+      "index_url": "https://www.mitsubishi-motors.co.za/new-navigation-page/",
+      "base_url": "https://www.mitsubishi-motors.co.za",
+      "note": "WordPress site with irregular slugs, manual model list",
+      "manual_models": [
+        {"model_name": "ASX", "url": "https://www.mitsubishi-motors.co.za/asx/"},
+        {"model_name": "Eclipse Cross", "url": "https://www.mitsubishi-motors.co.za/eclipse-cross-suv-for-sale/"},
+        {"model_name": "Outlander", "url": "https://www.mitsubishi-motors.co.za/outlander-luxury-suv/"},
+        {"model_name": "Outlander Sport", "url": "https://www.mitsubishi-motors.co.za/outlander-sport/"},
+        {"model_name": "Pajero Sport", "url": "https://www.mitsubishi-motors.co.za/pajero-sport-4x4-suv/"},
+        {"model_name": "Next Gen Triton", "url": "https://www.mitsubishi-motors.co.za/next-gen-triton/"},
+        {"model_name": "Triton", "url": "https://www.mitsubishi-motors.co.za/triton-bakkies-for-sale/"},
+        {"model_name": "Xpander", "url": "https://www.mitsubishi-motors.co.za/xpander-affordable-suv-sa/"},
+        {"model_name": "Xpander Cross", "url": "https://www.mitsubishi-motors.co.za/xpander-cross/"}
+      ]
+    },
+    "volvo": {
+      "name": "Volvo",
+      "index_url": "https://www.volvocars.com/za/cars/",
+      "base_url": "https://www.volvocars.com",
+      "note": "403 to scrapers, manual model list",
+      "manual_models": [
+        {"model_name": "XC40", "url": "https://www.volvocars.com/za/cars/xc40/"},
+        {"model_name": "XC40 Recharge", "url": "https://www.volvocars.com/za/cars/xc40-electric/"},
+        {"model_name": "XC60", "url": "https://www.volvocars.com/za/cars/xc60/"},
+        {"model_name": "XC60 PHEV", "url": "https://www.volvocars.com/za/cars/xc60-hybrid/"},
+        {"model_name": "XC90", "url": "https://www.volvocars.com/za/cars/xc90/"},
+        {"model_name": "XC90 PHEV", "url": "https://www.volvocars.com/za/cars/xc90-hybrid/"},
+        {"model_name": "EX30", "url": "https://www.volvocars.com/za/cars/ex30-electric/"},
+        {"model_name": "EC40", "url": "https://www.volvocars.com/za/cars/ec40-electric/"},
+        {"model_name": "EX90", "url": "https://www.volvocars.com/za/cars/ex90-electric/"}
+      ]
+    },
+    "audi": {
+      "name": "Audi",
+      "index_url": "https://www.audi.co.za/en/models/",
+      "base_url": "https://www.audi.co.za",
+      "note": "JS-heavy, manual model families",
+      "manual_models": [
+        {"model_name": "A1", "url": "https://www.audi.co.za/en/models/a1/"},
+        {"model_name": "A3", "url": "https://www.audi.co.za/en/models/a3/"},
+        {"model_name": "A4", "url": "https://www.audi.co.za/en/models/a4/"},
+        {"model_name": "A5", "url": "https://www.audi.co.za/en/models/a5/"},
+        {"model_name": "A6", "url": "https://www.audi.co.za/en/models/a6/"},
+        {"model_name": "A7", "url": "https://www.audi.co.za/en/models/a7/"},
+        {"model_name": "A8", "url": "https://www.audi.co.za/en/models/a8/"},
+        {"model_name": "Q2", "url": "https://www.audi.co.za/en/models/q2/"},
+        {"model_name": "Q3", "url": "https://www.audi.co.za/en/models/q3/"},
+        {"model_name": "Q5", "url": "https://www.audi.co.za/en/models/q5/"},
+        {"model_name": "Q7", "url": "https://www.audi.co.za/en/models/q7/"},
+        {"model_name": "Q8", "url": "https://www.audi.co.za/en/models/q8/"},
+        {"model_name": "e-tron", "url": "https://www.audi.co.za/en/models/tron/"},
+        {"model_name": "e-tron GT", "url": "https://www.audi.co.za/en/models/audi-e-tron-gt/audi-rs-etron-gt/"}
+      ]
+    },
+    "mg": {
+      "name": "MG",
+      "index_url": "https://www.mgmotor.co.za/models.html",
+      "base_url": "https://www.mgmotor.co.za",
+      "manual_models": [
+        {"model_name": "MG3", "url": "https://www.mgmotor.co.za/mg3.html"},
+        {"model_name": "MG ZS", "url": "https://www.mgmotor.co.za/mg-zs.html"},
+        {"model_name": "MG ZS Pro", "url": "https://www.mgmotor.co.za/mg-zs-pro.html"},
+        {"model_name": "MG HS", "url": "https://www.mgmotor.co.za/mg-hs.html"},
+        {"model_name": "Cyberster", "url": "https://www.mgmotor.co.za/cyberster.html"}
+      ]
+    },
+    "gwm": {
+      "name": "GWM",
+      "index_url": "https://www.gwm.co.za/models",
+      "base_url": "https://www.gwm.co.za",
+      "note": "Includes GWM bakkies, Tank SUVs, ORA EVs",
+      "manual_models": [
+        {"model_name": "P300", "url": "https://www.gwm.co.za/models/p300"},
+        {"model_name": "P300 SX", "url": "https://www.gwm.co.za/models/p300sx"},
+        {"model_name": "P300 LTD", "url": "https://www.gwm.co.za/models/p300-ltd"},
+        {"model_name": "P500", "url": "https://www.gwm.co.za/models/p-500"},
+        {"model_name": "Steed 5", "url": "https://www.gwm.co.za/models/steed-5"},
+        {"model_name": "Tank 300", "url": "https://www.gwm.co.za/models/tank-300"},
+        {"model_name": "Tank 500", "url": "https://www.gwm.co.za/models/tank-500"},
+        {"model_name": "ORA 03", "url": "https://www.gwm.co.za/models/ora-03"}
+      ]
+    },
+    "baic": {
+      "name": "BAIC",
+      "index_url": "https://www.baic.co.za/",
+      "base_url": "https://www.baic.co.za",
+      "note": "Old domain baicauto.co.za is dead, now baic.co.za",
+      "manual_models": [
+        {"model_name": "B30", "url": "https://www.baic.co.za/models/b30"},
+        {"model_name": "B40", "url": "https://www.baic.co.za/models/b40"},
+        {"model_name": "X55", "url": "https://www.baic.co.za/models/x55"}
+      ]
+    },
+    "honda": {
+      "name": "Honda",
+      "index_url": "https://www.honda.co.za/cars",
+      "base_url": "https://www.honda.co.za"
+    },
+    "jeep": {
+      "name": "Jeep",
+      "index_url": "https://www.jeep.com/za/",
+      "base_url": "https://www.jeep.com",
+      "note": "jeep.co.za redirects to jeep.com/za, JS-heavy",
+      "manual_models": [
+        {"model_name": "Wrangler", "url": "https://www.jeep.com/za/jeep-wrangler/petrol.html"},
+        {"model_name": "Gladiator", "url": "https://www.jeep.com/za/jeep-gladiator/new-jeep-gladiator.html"},
+        {"model_name": "Grand Cherokee", "url": "https://www.jeep.com/za/jeep-grand-cherokee/plug-in.html"},
+        {"model_name": "Grand Cherokee L", "url": "https://www.jeep.com/za/jeep-grand-cherokee-l/plug-in.html"}
+      ]
+    }
+  }
+}
