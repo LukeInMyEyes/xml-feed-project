@@ -61,70 +61,87 @@ def calc_excl_price(incl_price: int | None) -> int | None:
     return round(incl_price / VAT_RATE)
 
 
+# Image type to priority mapping (Jellybean=hero shot gets priority 1)
+IMAGE_TYPE_PRIORITY = {
+    "Jellybean": 1,
+    "ExteriorFront": 2,
+    "ExteriorRear": 3,
+    "Interior": 4,
+    "Lifestyle": 5,
+}
+
+
 def build_vehicle_element(brand_key: str, brand_name: str, model_slug: str,
                           variant: dict, images: list[dict] | None,
-                          model_name: str = "") -> Element:
-    """Build a single <Vehicle> XML element."""
-    vehicle = Element("Vehicle")
+                          model_name: str = "",
+                          variant_index: int = 0) -> Element:
+    """Build a single <StockFeedVehicle> XML element (EasyQuote-compatible)."""
+    vehicle = Element("StockFeedVehicle")
 
-    # Core fields
-    _sub(vehicle, "Brand", brand_name)
-    # Use model_name from data if available (QuickPic), otherwise derive from slug
     model_display = model_name or model_slug.replace("-", " ").replace("_", " ").title()
-    _sub(vehicle, "Model", model_display)
-    _sub(vehicle, "Variant", variant.get("variant_name", ""))
+    variant_name = variant.get("variant_name", "")
+
+    # Generate a stable stock number from brand + model + variant index
+    stock_num = f"NEW-{brand_key.upper()}-{model_slug.upper()}-{variant_index:03d}"
+
+    # EasyQuote-compatible fields
+    _sub(vehicle, "StockNumber", stock_num)
+    _sub(vehicle, "DealershipID", "EMOND")
+    _sub(vehicle, "Department", "New")
+    _sub(vehicle, "MMMake", brand_name)
+    _sub(vehicle, "MMModel", model_display)
+    _sub(vehicle, "MMDerivative", variant_name)
+    _sub(vehicle, "VehicleModel", f"{model_display} {variant_name}".strip())
+    _sub(vehicle, "VehicleCategory", "New")
+    _sub(vehicle, "VehicleYear", time.strftime("%Y"))
+    _sub(vehicle, "Condition", "New")
+    _sub(vehicle, "VehicleMileage", "0")
 
     # Pricing
     price_incl = variant.get("price_incl")
-    _sub(vehicle, "PriceIncl", str(price_incl) if price_incl else "")
+    _sub(vehicle, "VehicleRetailPriceIncl", str(price_incl) if price_incl else "")
     price_excl = calc_excl_price(price_incl)
-    _sub(vehicle, "PriceExcl", str(price_excl) if price_excl else "")
+    _sub(vehicle, "VehicleRetailPriceExcl", str(price_excl) if price_excl else "")
 
-    # Source URL
-    _sub(vehicle, "SourceURL", variant.get("source_url", ""))
-
-    # Specs
+    # Specs as extras/comments
     specs = variant.get("specs", {})
-    specs_el = SubElement(vehicle, "Specifications")
+    _sub(vehicle, "Transmission", specs.get("transmission", ""))
+    _sub(vehicle, "Drivetrain", specs.get("drivetrain", ""))
+    _sub(vehicle, "VehicleColour", "")
+    _sub(vehicle, "VehicleFullServiceHistory", "")
+    _sub(vehicle, "VehicleVIN", "")
+    _sub(vehicle, "VehicleRegNo", "")
+    _sub(vehicle, "VehicleEngine", specs.get("engine_capacity", ""))
+    _sub(vehicle, "VehicleMMCode", "")
 
-    spec_fields = [
-        ("EngineCapacity", "engine_capacity"),
-        ("PowerKW", "power_kw"),
-        ("TorqueNM", "torque_nm"),
-        ("FuelType", "fuel_type"),
-        ("Cylinders", "cylinders"),
-        ("Transmission", "transmission"),
-        ("Drivetrain", "drivetrain"),
-        ("TopSpeedKMH", "top_speed_kmh"),
-        ("Acceleration0to100", "acceleration_0_100"),
-        ("FuelConsumptionL100KM", "fuel_consumption_l100km"),
-        ("CO2EmissionsGKM", "co2_emissions_gkm"),
-        ("LengthMM", "length_mm"),
-        ("WidthMM", "width_mm"),
-        ("HeightMM", "height_mm"),
-        ("WheelbaseMM", "wheelbase_mm"),
-        ("BootCapacityL", "boot_capacity_l"),
-        ("KerbWeightKG", "kerb_weight_kg"),
-        ("FuelTankL", "fuel_tank_l"),
-        ("GroundClearanceMM", "ground_clearance_mm"),
-        ("TurningCircleM", "turning_circle_m"),
-        ("Airbags", "airbags"),
-        ("ABS", "abs"),
-        ("StabilityControl", "stability_control"),
-        ("Warranty", "warranty"),
-        ("ServicePlan", "service_plan"),
-    ]
+    # Build specs string for comments
+    spec_parts = []
+    spec_map = {
+        "engine_capacity": "Engine", "power_kw": "Power (kW)",
+        "torque_nm": "Torque (Nm)", "fuel_type": "Fuel",
+        "fuel_consumption_l": "Consumption (L/100km)",
+        "fuel_consumption_l100km": "Consumption (L/100km)",
+        "airbags": "Airbags", "warranty": "Warranty",
+        "service_plan": "Service Plan",
+    }
+    for key, label in spec_map.items():
+        val = specs.get(key, "")
+        if val:
+            spec_parts.append(f"{label}: {val}")
+    _sub(vehicle, "VehicleComments", " | ".join(spec_parts))
+    _sub(vehicle, "VehicleExtras", "")
 
-    for xml_name, spec_key in spec_fields:
-        _sub(specs_el, xml_name, specs.get(spec_key, ""))
-
-    # Images
+    # Images — EasyQuote format: ThumbnailUrl, FullImageUrl, Priority attributes
     images_el = SubElement(vehicle, "Images")
     if images:
         for img in images:
             img_el = SubElement(images_el, "Image")
-            img_el.set("type", img.get("type", ""))
-            img_el.text = img.get("url", "")
+            url = img.get("url", "")
+            img_type = img.get("type", "")
+            priority = IMAGE_TYPE_PRIORITY.get(img_type, 99)
+            img_el.set("ThumbnailUrl", url)
+            img_el.set("FullImageUrl", url)
+            img_el.set("Priority", str(priority))
 
     return vehicle
 
@@ -157,9 +174,7 @@ def compile_feed(brands_filter: list[str] = None) -> str:
         print("[Compile] No raw data found in raw_data/")
         return ""
 
-    root = Element("VehicleFeed")
-    root.set("generated", time.strftime("%Y-%m-%dT%H:%M:%S"))
-    root.set("generator", "SACarFeedBot/1.0")
+    root = Element("StockFeedVehicles")
 
     total_vehicles = 0
     total_issues = 0
@@ -175,14 +190,13 @@ def compile_feed(brands_filter: list[str] = None) -> str:
             for key, cfg in brand_config[tier].items():
                 brand_names[key] = cfg["name"]
 
+    global_variant_index = 0
+
     for brand_key in sorted(raw.keys()):
         if brands_filter and brand_key not in brands_filter:
             continue
 
         brand_name = brand_names.get(brand_key, brand_key.upper())
-        brand_el = SubElement(root, "Brand")
-        brand_el.set("name", brand_name)
-        brand_el.set("key", brand_key)
 
         brand_vehicle_count = 0
         brand_issues = 0
@@ -201,12 +215,13 @@ def compile_feed(brands_filter: list[str] = None) -> str:
 
                 vehicle_el = build_vehicle_element(
                     brand_key, brand_name, model_slug, variant, images,
-                    model_name=spec_data.get("model_name", "")
+                    model_name=spec_data.get("model_name", ""),
+                    variant_index=global_variant_index,
                 )
-                brand_el.append(vehicle_el)
+                root.append(vehicle_el)
                 brand_vehicle_count += 1
+                global_variant_index += 1
 
-        brand_el.set("vehicleCount", str(brand_vehicle_count))
         total_vehicles += brand_vehicle_count
         total_issues += brand_issues
         brand_summaries.append((brand_name, brand_vehicle_count, brand_issues))
