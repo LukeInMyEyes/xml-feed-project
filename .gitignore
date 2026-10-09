@@ -20,3 +20,6 @@ raw_data
 previous_feeds
 discovery_cache
 quickpic_run_log*.txt
+
+# local only: has a login inside, repo is public
+scrape_toyota_motorpress.py

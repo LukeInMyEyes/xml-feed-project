@@ -2,6 +2,7 @@
 Discovery Agent — finds model page URLs from a brand's index/models page.
 Tries static fetch (httpx + BS4) first, falls back to Playwright for JS-heavy sites.
 """
+from __future__ import annotations
 
 import json
 import sys

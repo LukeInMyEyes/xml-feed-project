@@ -3,6 +3,7 @@ Orchestrator — ties all agents together.
 CLI args: --brands, --tier, --diff-only
 Runs: discovery -> specs -> images -> compile -> diff
 """
+from __future__ import annotations
 
 import argparse
 import json
@@ -23,6 +24,8 @@ from agent_images import scrape_images
 from agent_compile import compile_feed
 from agent_diff import run_diff
 from quickpic_to_raw import convert_catalogue, TARGET_BRANDS
+from enrich_specs import enrich_all
+from scrape_carsza_specs import scrape_and_update as scrape_carsza
 
 BRAND_URLS = Path(__file__).parent / "brand_urls.json"
 OUTPUT_DIR = Path(__file__).parent / "output"
@@ -83,15 +86,16 @@ def url_to_slug(url: str, model_name: str = "") -> str:
 
 
 def archive_previous_feed():
-    """Move latest feed to previous_feeds/ before new run."""
-    latest = OUTPUT_DIR / "sa_car_feed_latest.xml"
-    if latest.exists():
-        PREV_DIR.mkdir(exist_ok=True)
-        # Read the generated timestamp from the XML
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        dest = PREV_DIR / f"sa_car_feed_{timestamp}.xml"
-        shutil.copy2(latest, dest)
-        print(f"[Orchestrator] Archived previous feed to {dest}")
+    """Move latest feeds to previous_feeds/ before new run."""
+    PREV_DIR.mkdir(exist_ok=True)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+    for ext in ("json", "xml"):
+        latest = OUTPUT_DIR / f"sa_car_feed_latest.{ext}"
+        if latest.exists():
+            dest = PREV_DIR / f"sa_car_feed_{timestamp}.{ext}"
+            shutil.copy2(latest, dest)
+            print(f"[Orchestrator] Archived previous {ext.upper()} feed to {dest}")
 
 
 def run(brands: list[str], skip_discovery: bool = False, diff_only: bool = False):
@@ -229,13 +233,24 @@ def run_quickpic(brands: list[str] | None = None, compile_only: bool = False):
         total = convert_catalogue(brands_filter=brand_set)
         print(f"  Converted {total} vehicles to raw_data/")
 
-    # Phase 2: Compile
-    print("\n--- Phase 2: Compile ---\n")
+    # Phase 2: Enrich specs (variant name parsing + known specs)
+    print("\n--- Phase 2: Enrich Specs ---\n")
     feed_brands = list(brand_set) if brand_set else sorted(TARGET_BRANDS)
+    enrich_all(feed_brands)
+
+    # Phase 3: Scrape cars.co.za for detailed specs
+    print("\n--- Phase 3: Cars.co.za Specs ---\n")
+    try:
+        scrape_carsza(feed_brands)
+    except Exception as e:
+        print(f"  ⚠️  Cars.co.za scraping error (non-fatal): {e}")
+
+    # Phase 4: Compile
+    print("\n--- Phase 4: Compile ---\n")
     feed_file = compile_feed(feed_brands)
 
-    # Phase 3: Diff
-    print("\n--- Phase 3: Diff ---\n")
+    # Phase 5: Diff
+    print("\n--- Phase 5: Diff ---\n")
     diff_file = run_diff()
 
     elapsed = time.time() - start_time

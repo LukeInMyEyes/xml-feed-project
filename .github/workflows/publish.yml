@@ -1,0 +1,76 @@
+name: Refresh & publish new-car feeds
+
+# WHAT THIS DOES (plain English)
+#   1. Rebuilds the per-brand new-car feeds by scraping the manufacturer sites
+#      (run_feed.py — drives a headless Chromium browser via Playwright).
+#   2. Publishes any feeds that actually changed into the dealer-assets repo and
+#      refreshes the jsDelivr CDN (publish.py).
+#
+# WHEN IT RUNS
+#   - Days 1–7 of every month: every day at 02:00 UTC  (catches first-of-month
+#     pricing, new models and fresh specials as manufacturers drop them).
+#   - Rest of the month: once a week, every Monday at 02:00 UTC (cheap safety net).
+#   - Any time, on demand, from the Actions tab ("Run workflow" button).
+#
+# NOTE ON THE SCHEDULE: GitHub cron treats day-of-month and day-of-week as OR, not
+# AND, so "Mondays only after the 7th" can't be written as one line. Instead we run
+# daily for the first week + every Monday. A Monday that falls in the first week will
+# trigger both — harmless: the second run rebuilds, finds nothing changed, publishes
+# nothing.
+
+on:
+  schedule:
+    - cron: '0 2 1-7 * *'   # 02:00 UTC, the 1st–7th of every month (daily)
+    - cron: '0 2 * * 1'     # 02:00 UTC, every Monday (weekly safety net)
+  workflow_dispatch: {}     # manual "Run workflow" button
+
+# Never let two runs publish to dealer-assets at the same time (avoids git push clashes).
+concurrency:
+  group: publish-feeds
+  cancel-in-progress: false
+
+jobs:
+  refresh-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out this repo (sa_new_car_feed)
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Chromium browser
+        run: python -m playwright install --with-deps chromium
+
+      # publish.py pushes into a SEPARATE repo (dealer-assets) that it expects to find
+      # cloned at ~/dev/dealer-assets. The built-in GITHUB_TOKEN only grants access to
+      # THIS repo, so we clone dealer-assets using a Personal Access Token secret.
+      - name: Clone dealer-assets repo (publish target)
+        env:
+          DEALER_ASSETS_TOKEN: ${{ secrets.DEALER_ASSETS_TOKEN }}
+        run: |
+          git clone \
+            "https://x-access-token:${DEALER_ASSETS_TOKEN}@github.com/LukeInMyEyes/dealer-assets.git" \
+            "$HOME/dev/dealer-assets"
+          git -C "$HOME/dev/dealer-assets" config user.name  "feed-bot"
+          git -C "$HOME/dev/dealer-assets" config user.email "feed-bot@users.noreply.github.com"
+
+      # Rebuild the feeds. This is the heavy step (live scraping). run_feed.py handles
+      # per-brand errors internally and keeps going, so one flaky manufacturer site
+      # won't fail the whole run.
+      - name: Build feeds (scrape + compile)
+        run: python run_feed.py
+
+      # Copy changed feeds into dealer-assets, commit, push, and purge the CDN.
+      # --what feed = new-car feeds only (specials live in a different repo).
+      - name: Publish changed feeds to dealer-assets + purge CDN
+        run: python publish.py --what feed
