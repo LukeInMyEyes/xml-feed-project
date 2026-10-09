@@ -3,6 +3,7 @@ Spec Scraper Agent — extracts variant/derivative spec data from a model page.
 Handles tables, accordions, tabs, and spec sheets.
 Creates one record per variant/derivative.
 """
+from __future__ import annotations
 
 import json
 import sys

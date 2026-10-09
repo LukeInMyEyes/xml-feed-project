@@ -8,6 +8,7 @@ Usage:
   python quickpic_to_raw.py --brand vw     # Single brand
   python quickpic_to_raw.py --keep-oem     # Don't clear existing raw_data
 """
+from __future__ import annotations
 
 import argparse
 import json
@@ -82,11 +83,11 @@ def load_specs_for_variant(brand: str, model: str, variant_name: str) -> dict:
             mapped[snake_key] = val
     return mapped
 
-# 22 target brands (everything except nissan)
 TARGET_BRANDS = {
     "vw", "toyota", "ford", "hyundai", "kia", "bmw", "mercedes", "audi",
     "mazda", "honda", "renault", "volvo", "jeep", "mitsubishi", "mg",
     "suzuki", "isuzu", "subaru", "gwm", "haval", "chery", "baic",
+    "peugeot", "citroen", "opel", "fiat", "changan", "jac", "foton",
 }
 
 
@@ -120,11 +121,8 @@ def convert_catalogue(brands_filter: set[str] | None = None, keep_oem: bool = Fa
 
     brands_to_process = brands_filter or TARGET_BRANDS
 
-    for brand_key, brand_data in catalogue.items():
-        # Skip _extra_ brands
-        if brand_key.startswith("_extra_"):
-            continue
-        # Skip brands not in our target set
+    for raw_key, brand_data in catalogue.items():
+        brand_key = raw_key.removeprefix("_extra_")
         if brand_key not in brands_to_process:
             continue
 

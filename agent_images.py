@@ -3,6 +3,7 @@ Image Agent — finds vehicle images from model pages.
 Detects jellybean images (PNG, transparent/white bg, configurator URLs).
 Collects up to 5 typed images per model.
 """
+from __future__ import annotations
 
 import json
 import sys
