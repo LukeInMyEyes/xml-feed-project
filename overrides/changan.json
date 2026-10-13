@@ -1,0 +1,35 @@
+{
+  "alsvin": {
+    "variants": {
+      "1.4 CS": {
+        "price_incl": 249900,
+        "note": "dealer-maintained retail price. Changan publishes no cash prices on changanmotors.co.za, only monthly offers, so the only scrapeable figures are a May catalogue and they are stale",
+        "checked": "2026-10-13"
+      },
+      "1.5 CE": {
+        "price_incl": 289900,
+        "note": "dealer-maintained retail price. Changan publishes no cash prices on changanmotors.co.za, only monthly offers, so the only scrapeable figures are a May catalogue and they are stale",
+        "checked": "2026-10-13"
+      }
+    }
+  },
+  "cs75-pro": {
+    "variants": {
+      "1.5T CE 5-seater": {
+        "price_incl": 489900,
+        "note": "dealer-maintained retail price. Changan publishes no cash prices on changanmotors.co.za, only monthly offers, so the only scrapeable figures are a May catalogue and they are stale",
+        "checked": "2026-10-13"
+      },
+      "1.5T CS 5-seater": {
+        "price_incl": 449900,
+        "note": "dealer-maintained retail price. Changan publishes no cash prices on changanmotors.co.za, only monthly offers, so the only scrapeable figures are a May catalogue and they are stale",
+        "checked": "2026-10-13"
+      },
+      "1.5T CS 7-seater": {
+        "price_incl": 469900,
+        "note": "dealer-maintained retail price. Changan publishes no cash prices on changanmotors.co.za, only monthly offers, so the only scrapeable figures are a May catalogue and they are stale",
+        "checked": "2026-10-13"
+      }
+    }
+  }
+}

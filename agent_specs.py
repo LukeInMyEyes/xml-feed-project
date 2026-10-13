@@ -480,8 +480,41 @@ def find_prices_subpage(html: str, base_url: str, model_slug: str) -> str | None
     return None
 
 
-def scrape_specs(url: str, brand_key: str, model_slug: str = None) -> list[dict]:
-    """Main spec scraping function for a model URL."""
+def dedupe_variants(variants: list[dict]) -> list[dict]:
+    """Collapse variants that are the same derivative scraped more than once.
+
+    Manufacturer pages repeat a price in several places: a card, a comparison
+    table, a sticky summary bar. extract_variants matches each of them, so a
+    two-derivative model comes back claiming five variants. JAC's T6 did
+    exactly that, listing Comfort three times and Lux twice, which is how the
+    catalogue ended up reporting 47 JAC variants against a real 25.
+
+    Identity is (name, price): same derivative at a different price is a real
+    distinction (4x2 against 4x4 where the page omits the drivetrain from the
+    label), so those are kept apart. Where copies disagree, the one carrying
+    the most specs wins, since the duplicates are usually a rich table row and
+    a bare summary tile.
+    """
+    best: dict[tuple, dict] = {}
+    for v in variants:
+        key = ((v.get("variant_name") or "").strip().lower(), v.get("price_incl"))
+        current = best.get(key)
+        if current is None or len(v.get("specs") or {}) > len(current.get("specs") or {}):
+            best[key] = v
+    return list(best.values())
+
+
+def scrape_specs(url: str, brand_key: str, model_slug: str = None,
+                 model_name: str = "") -> list[dict]:
+    """Main spec scraping function for a model URL.
+
+    `model_name` comes from the brand's own index page via discovery and is the
+    only reliable display name we get. It was being collected and then thrown
+    away here, so the raw file carried no model_name and the compiler fell back
+    to title-casing the slug. That is survivable for "t6" but produced names
+    like "Jacmotors_Co_Za_Jac T6 Single Cab" once the slug bug put hostnames in
+    the slug, and it is what put those names on live dealer sites.
+    """
     if not model_slug:
         path = urlparse(url).path
         parts = [p for p in path.strip("/").split("/") if p]
@@ -538,6 +571,8 @@ def scrape_specs(url: str, brand_key: str, model_slug: str = None) -> list[dict]
         if v.get("specs"):
             v["specs"] = normalize_specs(v["specs"])
 
+    variants = dedupe_variants(variants)
+
     # Save to raw_data
     brand_dir = RAW_DIR / brand_key
     brand_dir.mkdir(parents=True, exist_ok=True)
@@ -551,6 +586,12 @@ def scrape_specs(url: str, brand_key: str, model_slug: str = None) -> list[dict]
         "variant_count": len(variants),
         "variants": variants,
     }
+    # Only written when discovery actually gave us one. Writing an empty string
+    # would be worse than omitting the key, because the compiler's
+    # spec_data.get("model_name", <fallback>) would then return "" and every
+    # model would come out nameless.
+    if model_name:
+        output["model_name"] = model_name
 
     with open(out_file, "w") as f:
         json.dump(output, f, indent=2)

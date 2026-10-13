@@ -13,6 +13,7 @@ import shutil
 import sys
 import time
 from pathlib import Path
+from urllib.parse import urlparse
 
 os.environ.setdefault("PYTHONUTF8", "1")
 if sys.stdout.encoding != "utf-8":
@@ -50,13 +51,50 @@ def load_brands(tier: str = None, brand_keys: list[str] = None) -> list[str]:
     return all_brands
 
 
+# Segments that never identify a model on their own.
 GENERIC_SLUGS = {"overview", "index", "default", "home", "main", "amg", "plug-in",
                   "plug_in", "petrol", "diesel", "hybrid", "electric"}
 
+# Segments that are real path components but say nothing about which model this
+# is, so they must never be glued on as a disambiguating prefix. Anything
+# matching "<word>-models", "new-<word>" and so on is caught by the pattern
+# below rather than listed here, because every manufacturer invents its own.
+CONTAINER_SEGMENTS = {"models", "model", "passengercars", "passenger-cars",
+                      "all-models", "new-models", "our-models", "the-range",
+                      "en", "za", "en-za", "vehicles", "vehicle", "cars", "car",
+                      "showroom", "new-vehicles", "new", "range", "lineup",
+                      "line-up", "products", "shop", "buy", "explore", "discover"}
+
+CONTAINER_PATTERN = re.compile(
+    r'^(new|all|our|the|current)[-_]?(models?|vehicles?|cars?|range|lineup)$'
+    r'|^(models?|vehicles?|cars?|range)[-_]?(list|overview|index)?$'
+)
+
+
+def _is_container(segment: str) -> bool:
+    """True for path segments that group models rather than name one."""
+    return (segment in GENERIC_SLUGS
+            or segment in CONTAINER_SEGMENTS
+            or bool(CONTAINER_PATTERN.match(segment)))
+
 
 def url_to_slug(url: str, model_name: str = "") -> str:
-    """Derive a unique slug from a URL, falling back to parent segments for generic filenames."""
-    parts = url.rstrip("/").split("?")[0].split("/")
+    """Derive a unique slug from a URL, falling back to parent segments for generic filenames.
+
+    Only the PATH is considered. Splitting the whole URL on "/" used to leave
+    the scheme and hostname in the segment list, so any manufacturer whose
+    model pages sit one level below the root got its own domain welded onto
+    every slug: jacmotors.co.za/jac-t6-single-cab became
+    "jacmotors_co_za_jac-t6-single-cab". That renamed every model, which then
+    compiled as a NEW model beside the correctly-named one still sitting in
+    raw_data, so brands came out with duplicate entries under unreadable names.
+    It hit JAC, Changan, MG, Mitsubishi, Nissan and Chery; BAIC escaped only
+    because its pages live under /models/, which was already being stripped.
+    """
+    path = urlparse(url).path
+    parts = [p for p in path.split("?")[0].split("/") if p]
+    if not parts:
+        parts = [""]
     # Strip file extensions from the last segment
     parts[-1] = re.sub(r'\.(html?|php|aspx?)$', '', parts[-1])
 
@@ -66,15 +104,13 @@ def url_to_slug(url: str, model_name: str = "") -> str:
         candidate = re.sub(r'[^\w\-]', '_', parts[i]).lower()
         if candidate and candidate not in GENERIC_SLUGS:
             slug = candidate
-            # If the next segment is also meaningful (e.g., "suv/glc"), combine them
-            # to avoid collisions between e.g. "saloon/a-class" and "hatchback/a-class"
+            # If the parent segment is also meaningful (e.g., "suv/glc"), combine
+            # them to avoid collisions between e.g. "saloon/a-class" and
+            # "hatchback/a-class". A container segment tells us nothing, so it is
+            # dropped rather than prefixed.
             if i > 0:
                 parent = re.sub(r'[^\w\-]', '_', parts[i - 1]).lower()
-                if parent in GENERIC_SLUGS or parent in ("models", "passengercars",
-                    "all-models", "en", "za", "vehicles", "cars", "showroom",
-                    "new-vehicles", "new", "range"):
-                    pass  # parent is too generic, use just the model slug
-                else:
+                if not _is_container(parent):
                     slug = f"{parent}_{slug}"
             break
 
@@ -158,7 +194,8 @@ def run(brands: list[str], skip_discovery: bool = False, diff_only: bool = False
             url = model["url"]
             slug = url_to_slug(url, model.get("model_name", ""))
             try:
-                variants = scrape_specs(url, brand, slug)
+                variants = scrape_specs(url, brand, slug,
+                                        model_name=model.get("model_name", ""))
                 spec_results[brand].append({
                     "model": model["model_name"],
                     "slug": slug,

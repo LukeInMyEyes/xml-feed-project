@@ -1,0 +1,11 @@
+{
+  "tunland-g7": {
+    "variants": {
+      "2.0TD D/C 4x4 Limited": {
+        "price_incl": 599900,
+        "note": "verified against the manufacturer site; scrape is stale",
+        "checked": "2026-10-13"
+      }
+    }
+  }
+}

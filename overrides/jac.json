@@ -1,0 +1,16 @@
+{
+  "t6": {
+    "variants": {
+      "2.0T CTi S/C 4x2 Comfort": {
+        "price_incl": 309900,
+        "note": "verified against the manufacturer site; scrape is stale",
+        "checked": "2026-10-13"
+      },
+      "2.0T CTi S/C 4x2 Lux": {
+        "price_incl": 324900,
+        "note": "verified against the manufacturer site; scrape is stale",
+        "checked": "2026-10-13"
+      }
+    }
+  }
+}

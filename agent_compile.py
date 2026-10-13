@@ -8,6 +8,7 @@ calculates excl price, validates, and outputs:
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 import re
@@ -20,24 +21,261 @@ DEALERS_FILE = Path(__file__).parent / "dealers.json"
 VAT_RATE = 1.15
 
 
+# A catalogue may shrink a little between runs: a manufacturer really does
+# discontinue things. One derivative in ten is a plausible pruning. More than
+# that, in a single automated run, has so far always been a broken scrape.
+#
+# Deliberately strict, because the two outcomes are not symmetric. A false
+# refusal costs somebody a look at the log and one environment variable. A
+# false pass puts missing vehicles and wrong prices on a live dealer site,
+# where the first person to notice is a customer. BAIC slipped through at a
+# third and silently lost three of the four B30 derivatives.
+MAX_MODEL_LOSS = 0.10
+
+MANGLED_NAME = re.compile(r'_co_za|_com_|^(www|http|https)_|_(co|org|net)_', re.I)
+
+
+OVERRIDES_DIR = Path(__file__).parent / "overrides"
+
+
+def load_overrides(brand_key: str) -> dict:
+    """Verified corrections that must survive a recompile.
+
+    Scraped data is not always the best data we have. Changan publishes no cash
+    prices on its own site at all, so the only figures in raw_data come from a
+    May catalogue scrape, while the prices actually on the dealer sites have
+    since been corrected by hand against price lists and the manufacturer.
+    Before this existed those corrections lived nowhere but the compiled output,
+    so the next compile silently reverted them: recompiling Changan pulled the
+    Alsvin back from R249 900 to a five month old R238 000.
+
+    An override is a human saying "I checked this, and it beats the scrape".
+    Each one carries a note and a date so the next person knows what was
+    checked and when it is worth re-checking.
+
+    overrides/<brand>.json:
+      {"<model-slug>": {
+         "model_name": "...",                       # optional
+         "variants": {"<variant name>": {"price_incl": 249900,
+                                          "note": "...", "checked": "2026-10-13"}}}}
+    """
+    f = OVERRIDES_DIR / f"{brand_key}.json"
+    if not f.exists():
+        return {}
+    try:
+        with open(f) as fh:
+            return json.load(fh)
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"  [compile] {brand_key}: overrides file unreadable, ignoring ({e})")
+        return {}
+
+
+def apply_overrides(brand_obj: dict, overrides: dict) -> int:
+    """Apply verified corrections onto a compiled brand. Returns how many landed."""
+    if not overrides:
+        return 0
+
+    applied = 0
+    for model in brand_obj.get("models", []):
+        rule = overrides.get(model.get("slug"))
+        if not rule:
+            continue
+        if rule.get("model_name"):
+            model["name"] = rule["model_name"]
+            applied += 1
+        variant_rules = rule.get("variants", {})
+        for variant in model.get("variants", []):
+            vr = variant_rules.get(variant.get("name"))
+            if not vr or vr.get("price_incl") is None:
+                continue
+            price = vr["price_incl"]
+            variant["price_incl"] = price
+            variant["price_excl"] = calc_excl_price(price)
+            variant["price_display"] = f"R{price:,}".replace(",", " ")
+            variant["monthly_estimate"] = estimate_monthly(price)
+            applied += 1
+
+        prices = [v["price_incl"] for v in model.get("variants", [])
+                  if v.get("price_incl")]
+        if prices:
+            model["price_from"], model["price_to"] = min(prices), max(prices)
+            lo = f"R{model['price_from']:,}".replace(",", " ")
+            hi = f"R{model['price_to']:,}".replace(",", " ")
+            model["price_range"] = lo if lo == hi else f"{lo} – {hi}"
+
+    all_prices = [v["price_incl"] for m in brand_obj.get("models", [])
+                  for v in m.get("variants", []) if v.get("price_incl")]
+    if all_prices:
+        brand_obj["price_from"], brand_obj["price_to"] = min(all_prices), max(all_prices)
+
+    # An override that matches nothing is a silent lie: the model or variant was
+    # renamed, so the correction is no longer being applied and nobody knows.
+    expected = sum(1 for r in overrides.values()
+                   for _ in r.get("variants", {})) + \
+               sum(1 for r in overrides.values() if r.get("model_name"))
+    if applied < expected:
+        print(f"  [compile] {brand_obj.get('key')}: {expected - applied} override(s) "
+              f"matched nothing, check the model and variant names")
+
+    return applied
+
+
+def check_brand_regression(brand_file: Path, new_brand: dict) -> list[str]:
+    """Reasons this brand catalogue must not overwrite the one already on disk.
+
+    These feeds publish straight onto live dealer websites, so a bad scrape is
+    not an inconvenience, it is wrong prices and missing vehicles in front of
+    customers. On 9 October a run wrote mangled model names into Changan, Foton,
+    JAC, MG, Mitsubishi and Nissan, and dropped JAC's N56, N140 and both EVs
+    entirely. Nothing checked, nothing complained, and the only reason it never
+    reached a customer is that nobody happened to run the sync afterwards.
+
+    Returns an empty list when the new catalogue is safe to write. Set
+    FEED_ALLOW_REGRESSION=1 to override, which is the right move when a brand
+    genuinely has pruned its range and you have confirmed it on their site.
+    """
+    if os.environ.get("FEED_ALLOW_REGRESSION"):
+        return []
+
+    problems = []
+
+    # A name carrying a hostname means the slug fell back to the URL. These are
+    # unreadable on a dealer site, so they are refused whether or not anything
+    # else regressed.
+    mangled = [m["name"] for m in new_brand.get("models", [])
+               if MANGLED_NAME.search(m.get("name", ""))]
+    if mangled:
+        problems.append(f"{len(mangled)} model name(s) built from a URL, "
+                        f"e.g. {mangled[0]!r}")
+
+    if not brand_file.exists():
+        return problems
+
+    try:
+        with open(brand_file) as f:
+            old = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return problems  # nothing trustworthy to compare against
+
+    # Identify models by source_url where we have one, because a model that was
+    # merged with its own duplicate has not been lost, it has been deduplicated,
+    # and its slug legitimately changes. Comparing slugs alone flagged Jeep and
+    # GAC as regressions for exactly that reason. Fall back to the slug for old
+    # entries that predate source_url being recorded.
+    def identity(models):
+        out = {}
+        for m in models:
+            url = (m.get("source_url") or "").strip().rstrip("/")
+            url = url.replace("://www.", "://").lower()
+            out[url or f"slug:{m.get('slug')}"] = m.get("slug")
+        return out
+
+    old_models = identity(old.get("models", []))
+    new_models = identity(new_brand.get("models", []))
+    if old_models:
+        lost = set(old_models) - set(new_models)
+        if len(lost) / len(old_models) > MAX_MODEL_LOSS:
+            sample = ", ".join(sorted(old_models[k] or k for k in lost)[:4])
+            problems.append(f"{len(lost)} of {len(old_models)} models would "
+                            f"disappear ({sample}...)")
+
+    # Model count alone is not enough. BAIC kept all three model families while
+    # quietly dropping two of its eight derivatives, which on a dealer site is
+    # two bakkies a customer can no longer find.
+    old_priced = sum(1 for m in old.get("models", [])
+                     for v in m.get("variants", []) if v.get("price_incl"))
+    new_priced = sum(1 for m in new_brand.get("models", [])
+                     for v in m.get("variants", []) if v.get("price_incl"))
+    if old_priced and new_priced == 0:
+        problems.append(f"every price would be lost ({old_priced} priced "
+                        f"variants before, none now)")
+    elif old_priced and (old_priced - new_priced) / old_priced > MAX_MODEL_LOSS:
+        problems.append(f"priced variants would fall from {old_priced} to "
+                        f"{new_priced}")
+
+    return problems
+
+
 def load_raw_data() -> dict:
-    """Load all raw JSON data, organized by brand/model."""
+    """Load all raw JSON data, organized by brand/model.
+
+    A model is identified by its source_url, not by its filename. Raw files are
+    never deleted, so when a model's slug changes the old file stays behind and
+    used to compile as a second, separate model: the JAC catalogue carried both
+    "T6" and "Jacmotors_Co_Za_Jac T6 Single Cab", two entries for one bakkie,
+    and the same happened across Changan, Foton, MG, Mitsubishi and Nissan.
+    Keying on the URL collapses them without deleting anything, which matters
+    because a half-finished scrape must never be able to destroy good data.
+
+    When two files describe the same URL the RICHER one wins, not the newer.
+    Recency is the obvious rule and it is the wrong one here: the October
+    manufacturer-site scrape is consistently thinner than the catalogue it sits
+    beside, because it reads prices off a marketing page rather than a spec
+    table. BAIC's x55.json (October) holds one variant and no model name where
+    x55-plus.json (June) holds four with full specs. Preferring the newer file
+    would have thrown away three real derivatives and the model's display name
+    to gain nothing. Files with no source_url fall back to the filename.
+    """
     data = {}
     if not RAW_DIR.exists():
         return data
+
+    def richness(spec: dict) -> tuple:
+        variants = spec.get("variants") or []
+        return (
+            sum(1 for v in variants if v.get("price_incl")),
+            sum(len(v.get("specs") or {}) for v in variants),
+            1 if spec.get("model_name") else 0,
+            spec.get("scraped_at", ""),
+        )
 
     for brand_dir in RAW_DIR.iterdir():
         if not brand_dir.is_dir():
             continue
         brand_key = brand_dir.name
         data[brand_key] = {}
+        seen: dict[str, tuple[str, tuple]] = {}  # url -> (slug, richness)
 
-        for json_file in brand_dir.glob("*.json"):
+        for json_file in sorted(brand_dir.glob("*.json")):
             if json_file.name.endswith("_images.json"):
                 continue
             model_slug = json_file.stem
             with open(json_file) as f:
                 spec_data = json.load(f)
+
+            # Trailing slashes and www. are not a difference worth splitting a
+            # model over.
+            url = (spec_data.get("source_url") or "").strip().rstrip("/")
+            url = url.replace("://www.", "://").lower()
+            if url:
+                score = richness(spec_data)
+                previous = seen.get(url)
+                if previous:
+                    prev_slug, prev_score = previous
+                    keep_this = score > prev_score
+                    winner, loser = ((model_slug, prev_slug) if keep_this
+                                     else (prev_slug, model_slug))
+                    print(f"  [compile] {brand_key}: '{loser}' and '{winner}' are the "
+                          f"same model ({url}), keeping the fuller '{winner}'")
+                    # The display name is the one field where the thinner file
+                    # is often the better one, because the richer scrape reads
+                    # specs off the page but never learns what the model is
+                    # called. BAIC's b40.json carries more specs and no name,
+                    # so without this the model would render as "B40" instead
+                    # of "B40 Plus".
+                    if keep_this:
+                        if not spec_data.get("model_name"):
+                            inherited = (data[brand_key].get(prev_slug, {})
+                                         .get("specs", {}).get("model_name"))
+                            if inherited:
+                                spec_data["model_name"] = inherited
+                        data[brand_key].pop(prev_slug, None)
+                    else:
+                        kept = data[brand_key].get(prev_slug, {}).get("specs", {})
+                        if not kept.get("model_name") and spec_data.get("model_name"):
+                            kept["model_name"] = spec_data["model_name"]
+                        continue
+                seen[url] = (model_slug, score)
 
             img_file = brand_dir / f"{model_slug}_images.json"
             img_data = None
@@ -443,10 +681,22 @@ def compile_feed(brands_filter: list[str] = None) -> str:
 
         # JSON brand
         brand_obj = build_json_brand(brand_key, brand_name, models_data)
+        n_over = apply_overrides(brand_obj, load_overrides(brand_key))
+        if n_over:
+            print(f"  [compile] {brand_key}: applied {n_over} verified override(s)")
         feed["brands"].append(brand_obj)
 
         # Per-brand JSON file
         brand_file = brands_dir / f"{brand_key}.json"
+        regressions = check_brand_regression(brand_file, brand_obj)
+        if regressions:
+            total_issues += len(regressions)
+            print(f"  ✗ {brand_key}: REFUSED, kept the previous catalogue")
+            for r in regressions:
+                print(f"      {r}")
+            print(f"      To publish anyway: FEED_ALLOW_REGRESSION=1")
+            continue
+
         with open(brand_file, "w", encoding="utf-8") as f:
             json.dump(brand_obj, f, indent=2, ensure_ascii=False)
             f.write("\n")
