@@ -3,13 +3,60 @@
     "variants": {
       "2.0T CTi S/C 4x2 Comfort": {
         "price_incl": 309900,
-        "note": "verified against the manufacturer site; scrape is stale",
-        "checked": "2026-10-13"
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
       },
       "2.0T CTi S/C 4x2 Lux": {
         "price_incl": 324900,
-        "note": "verified against the manufacturer site; scrape is stale",
-        "checked": "2026-10-13"
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
+      },
+      "2.0 CTI S/C 4x4 Comfort": {
+        "price_incl": 369900,
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
+      },
+      "2.0 CTI S/C 4x4 Lux": {
+        "price_incl": 389900,
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
+      }
+    }
+  },
+  "n56": {
+    "variants": {
+      "3 Ton Truck C/C (ABS & A/C)": {
+        "price_incl": 379900,
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
+      },
+      "3 Ton Truck D/S (ABS & A/C)": {
+        "price_incl": 399900,
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
+      }
+    }
+  },
+  "n140": {
+    "variants": {
+      "9 Ton Truck C/C (ABS & A/C)": {
+        "price_incl": 599900,
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
+      },
+      "9 Ton Truck LWB C/C AMT (ABS & A/C)": {
+        "price_incl": 639900,
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all.",
+        "checked": "2026-10-14"
+      }
+    }
+  },
+  "t9": {
+    "variants": {
+      "PHEV 2.0 D/C 4x4 Super Lux": {
+        "price_incl": 869900,
+        "note": "JAC Motors retail price list dated 1 October 2026, supplied by Bradley Narainsamy (dealer principal). Outranks the public site, which lists a 3.3-tonne N56 body range the dealership does not sell and no PHEV at all. Confirmed still current.",
+        "checked": "2026-10-14"
       }
     }
   }
