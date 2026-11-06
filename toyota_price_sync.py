@@ -88,7 +88,17 @@ def rands(p):
 def fetch(rangename):
     url = API + urllib.parse.quote(rangename)
     req = urllib.request.Request(url, headers=UA)
-    data = json.loads(urllib.request.urlopen(req, timeout=30).read())
+    resp = urllib.request.urlopen(req, timeout=30)
+    raw = resp.read()
+    # Cloudflare in front of the API forces brotli whatever we ask for (Nov 2026).
+    enc = (resp.headers.get("Content-Encoding") or "").lower()
+    if enc == "br":
+        import brotli
+        raw = brotli.decompress(raw)
+    elif enc == "gzip":
+        import gzip
+        raw = gzip.decompress(raw)
+    data = json.loads(raw)
     return data if isinstance(data, list) else []
 
 
